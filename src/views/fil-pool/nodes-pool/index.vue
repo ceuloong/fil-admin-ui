@@ -215,7 +215,7 @@ export default {
     getList() {
       this.loading = true
       listFilNodes(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
-        this.filNodesList = response.data.list
+        this.filNodesList = response.data.list.nodesList
         this.total = response.data.count
         this.loading = false
       }

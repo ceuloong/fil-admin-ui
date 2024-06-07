@@ -21,10 +21,10 @@
               style="width: 160px"
             >
               <el-option
-                v-for="dict in msigNodeOptions"
-                :key="dict.value"
-                :label="dict.label"
-                :value="dict.value"
+                v-for="dict in searchMsigNodeOptions"
+                :key="dict.address"
+                :label="dict.address"
+                :value="dict.address"
               />
             </el-select>
           </el-form-item>
@@ -127,7 +127,62 @@
             >导出</el-button>
           </el-col>
         </el-row>
-
+        <el-row :gutter="10" class="mb8">
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">總算力：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.qualityAdjPower).toFixed(2) }} PiB</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">餘額：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.balance).toFixed(4) }} Fil</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">可用：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.availableBalance).toFixed(4) }} Fil</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">質押：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.sectorPledgeBalance).toFixed(4) }} Fil</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">鎖倉：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.vestingFunds).toFixed(4) }} Fil</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">24H爆塊數：</span>
+              <span class="value-text">{{ poolDatas.blocksMined24H }}</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">24H獎勵：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.totalRewards24H).toFixed(4) }} Fil</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">幸運值：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.luckyValue24H * 100).toFixed(2) }} %</span>
+            </template>
+          </el-col>
+          <el-col :span="1.5">
+            <template>
+              <span class="title-text">24H算力增量：</span>
+              <span class="value-text">{{ parseFloat(poolDatas.qualityAdjPowerDelta24H).toFixed(2) }} Tib</span>
+            </template>
+          </el-col>
+        </el-row>
         <el-table
           v-loading="loading"
           :data="filNodesList"
@@ -136,7 +191,19 @@
           @sort-change="handleSortChang"
         >
           <el-table-column type="selection" align="center" />
-          <el-table-column label="MinerID" width="100" align="center" prop="node" />
+          <el-table-column label="MinerID" width="100" align="center">
+            <template slot-scope="scope">
+              <div>{{ scope.row.node }}</div>
+              <div>{{ scope.row.title }}</div>
+              <el-button
+                v-permisaction="['admin:filnodes:edit']"
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleUpdateTitle(scope.row)"
+              >编辑</el-button>
+            </template>
+          </el-table-column>
           <el-table-column
             label="有效算力(PiB)"
             align="center"
@@ -309,7 +376,22 @@
           :limit.sync="queryParams.pageSize"
           @pagination="getList"
         />
+        <!-- 修改标签对话框 -->
+        <el-dialog :title="title" :visible.sync="dialogEditTitle" width="600px">
+          <el-form ref="formTitle" :model="formTitle" label-width="100px">
 
+            <el-form-item label="标签" prop="title">
+              <el-input
+                v-model="formTitle.title"
+                placeholder="标签"
+              />
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="editTitleSubmit">确 定</el-button>
+            <el-button @click="cancel">取 消</el-button>
+          </div>
+        </el-dialog>
         <!-- 添加或修改对话框 -->
         <el-dialog :title="title" :visible.sync="open" width="600px">
           <el-form ref="form" :model="form" :rules="rules" label-width="100px">
@@ -320,6 +402,16 @@
                 placeholder="账户名称"
               />
             </el-form-item>
+            <el-form-item label="上级部门" prop="deptId">
+              <treeselect
+                v-model="form.deptId"
+                :options="deptOptions"
+                :normalizer="normalizer"
+                :show-count="true"
+                placeholder="选择上级部门"
+                :is-disabled="isEdit"
+              />
+            </el-form-item>
             <el-form-item label="所属账户" prop="msigNode">
               <el-select
                 v-model="form.msigNode"
@@ -327,9 +419,9 @@
               >
                 <el-option
                   v-for="dict in msigNodeOptions"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
+                  :key="dict.address"
+                  :label="dict.address"
+                  :value="dict.address"
                 />
               </el-select>
             </el-form-item>
@@ -415,14 +507,31 @@
     </template>
   </BasicLayout>
 </template>
-
+<style scoped>
+.my-col {
+  padding: 10px;
+}
+.title-text {
+  font-size: 12px;
+  font-weight: bold;
+}
+.value-text {
+  color: #ff0000;
+  font-size: 14px;
+  font-weight: bold;
+}
+</style>
 <script>
 import { addFilNodes, delFilNodes, getFilNodes, listFilNodes, updateFilNodes, exportFilNodes } from '@/api/fil-pool/nodes'
+import { listFilMsig } from '@/api/fil-pool/fil-msig'
+import { getDeptList } from '@/api/admin/sys-dept'
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+import { numberFormatter } from '@/filters'
 
 export default {
   name: 'FilNodes',
-  components: {
-  },
+  components: { Treeselect },
   data() {
     return {
       // 遮罩层
@@ -439,30 +548,18 @@ export default {
       title: '',
       // 是否显示弹出层
       open: false,
+      dialogEditTitle: false,
       isEdit: false,
       // 类型数据字典
       typeOptions: [],
       filNodesList: [],
       lastDistributeTime: '',
-      msigNodeOptions: [
-        {
-          value: 'f01900855',
-          label: 'f01900855'
-        },
-        {
-          value: 'f02088713',
-          label: 'f02088713'
-        },
-        {
-          value: 'f02362285',
-          label: 'f02362285'
-        },
-        {
-          value: 'f02837885',
-          label: 'f02837885'
-        }
-      ],
+      // 部门树选项
+      deptOptions: [],
+      searchMsigNodeOptions: [],
       statusOptions: [],
+      msigNodeOptions: [],
+      poolDatas: {},
 
       // 关系表类型
 
@@ -479,12 +576,28 @@ export default {
       // 表单参数
       form: {
       },
+      formTitle: {
+        title: ''
+      },
       // 表单校验
       rules: { node: [{ required: true, message: '账户名称不能为空', trigger: 'blur' }],
         msigNode: [{ required: true, message: '所属地址不能为空', trigger: 'blur' }],
         type: [{ required: true, message: '节点类型不能为空', trigger: 'blur' }],
         sectorSize: [{ required: true, message: '扇区大小不能为空', trigger: 'blur' }]
       }
+    }
+  },
+  computed: {
+    numberFormatter,
+    formattedNumber(num) {
+      // 使用 Intl.NumberFormat 对象格式化数字
+      const formatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal', // 默认就是 decimal，也可以显式指定
+        minimumFractionDigits: 2, // 最小小数位数
+        maximumFractionDigits: 2 // 最大小数位数
+        // 如果需要货币格式，可以加上 currency: 'USD' 等选项
+      })
+      return formatter.format(num)
     }
   },
   created() {
@@ -495,21 +608,58 @@ export default {
     this.getDicts('fil_node_type').then(response => {
       this.typeOptions = response.data
     })
+    listFilMsig().then(response => {
+      this.searchMsigNodeOptions = response.data.list
+    })
   },
   methods: {
     /** 查询参数列表 */
     getList() {
       this.loading = true
       listFilNodes(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
-        this.filNodesList = response.data.list
+        this.filNodesList = response.data.list.nodesList
+        this.poolDatas = response.data.list
         this.total = response.data.count
         this.loading = false
       }
       )
     },
+    /** 转换部门数据结构 */
+    normalizer(node) {
+      if (node.children && !node.children.length) {
+        delete node.children
+      }
+      return {
+        id: node.deptId,
+        label: node.deptName,
+        children: node.children
+      }
+    },
+    /** 查询部门下拉树结构 */
+    getTreeselect(e) {
+      getDeptList().then(response => {
+        this.deptOptions = []
+
+        if (e === 'update') {
+          const dept = { deptId: 0, deptName: '主类目', children: [], isDisabled: true }
+          dept.children = response.data
+          this.deptOptions.push(dept)
+        } else {
+          const dept = { deptId: 0, deptName: '主类目', children: [] }
+          dept.children = response.data
+          this.deptOptions.push(dept)
+        }
+      })
+    },
+    getMsigSelect(e) {
+      listFilMsig().then(response => {
+        this.msigNodeOptions = response.data.list
+      })
+    },
     // 取消按钮
     cancel() {
       this.open = false
+      this.dialogEditTitle = false
       this.reset()
     },
     // 表单重置
@@ -563,6 +713,8 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset()
+      this.getTreeselect('add')
+      this.getMsigSelect('add')
       this.open = true
       this.title = '添加FilNodes'
       this.isEdit = false
@@ -576,6 +728,8 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
+      this.getTreeselect('add')
+      this.getMsigSelect('add')
       const id =
                 row.id || this.ids
       getFilNodes(id).then(response => {
@@ -584,6 +738,16 @@ export default {
         this.title = '修改FilNodes'
         this.isEdit = true
       })
+    },
+    /** 修改按钮操作 */
+    handleUpdateTitle(row) {
+      this.reset()
+      const id = row.id || this.ids
+      this.formTitle.title = row.title
+      this.formTitle.id = id
+      this.dialogEditTitle = true
+      this.title = '编辑节点标签'
+      this.isEdit = true
     },
     /** 提交按钮 */
     submitForm: function() {
@@ -611,6 +775,19 @@ export default {
             })
           }
         }
+      })
+    },
+    editTitleSubmit: function() {
+      this.$refs['formTitle'].validate(valid => {
+        updateFilNodes(this.formTitle).then(response => {
+          if (response.code === 200) {
+            this.msgSuccess(response.msg)
+            this.dialogEditTitle = false
+            this.getList()
+          } else {
+            this.msgError(response.msg)
+          }
+        })
       })
     },
     /** 删除按钮操作 */
