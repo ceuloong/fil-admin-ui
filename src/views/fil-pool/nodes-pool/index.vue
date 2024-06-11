@@ -12,7 +12,7 @@
             @keyup.enter.native="handleQuery"
           />
           </el-form-item>
-          <el-form-item label="所属账户" prop="msigNode">
+          <el-form-item v-if="roleId == 1" label="所属账户" prop="msigNode">
             <el-select
               v-model="queryParams.msigNode"
               placeholder="所属账户"
@@ -21,10 +21,10 @@
               style="width: 160px"
             >
               <el-option
-                v-for="dict in msigNodeOptions"
-                :key="dict.value"
-                :label="dict.label"
-                :value="dict.value"
+                v-for="dict in searchMsigNodeOptions"
+                :key="dict.address"
+                :label="dict.address"
+                :value="dict.address"
               />
             </el-select>
           </el-form-item>
@@ -91,7 +91,7 @@
           >
             <template slot-scope="scope">
               <div :style="{ color: scope.row.tag }">
-                {{ scope.row.endTimeStr }}
+                {{ formatDate(scope.row.endTime) }}
               </div>
             </template>
           </el-table-column>
@@ -140,6 +140,7 @@
 
 <script>
 import { getFilNodes, listFilNodes } from '@/api/fil-pool/nodes'
+import { listFilMsig } from '@/api/fil-pool/fil-msig'
 
 export default {
   name: 'FilNodes',
@@ -165,24 +166,10 @@ export default {
       // 类型数据字典
       typeOptions: [],
       filNodesList: [],
-      msigNodeOptions: [
-        {
-          value: 'f01900855',
-          label: 'f01900855'
-        },
-        {
-          value: 'f02088713',
-          label: 'f02088713'
-        },
-        {
-          value: 'f02362285',
-          label: 'f02362285'
-        },
-        {
-          value: 'f02837885',
-          label: 'f02837885'
-        }
+      searchMsigNodeOptions: [
+
       ],
+      roleId: '',
 
       // 关系表类型
 
@@ -209,6 +196,11 @@ export default {
   },
   created() {
     this.getList()
+    if (this.roleId === 1) {
+      listFilMsig().then(response => {
+        this.searchMsigNodeOptions = response.data.list
+      })
+    }
   },
   methods: {
     /** 查询参数列表 */
@@ -216,6 +208,7 @@ export default {
       this.loading = true
       listFilNodes(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
         this.filNodesList = response.data.list.nodesList
+        this.roleId = response.data.list.roleId
         this.total = response.data.count
         this.loading = false
       }
@@ -300,11 +293,11 @@ export default {
       })
     },
     // 方法区
-    formatDate(row, column) {
+    formatDate(data) {
       // 获取单元格数据
-      const data = row[column.property]
+      // const data = row[column.property]
       if (data == null) {
-        return null
+        return 'null'
       }
       const dt = new Date(data)
       return dt.getFullYear() + '/' + (dt.getMonth() + 1) + '/' + dt.getDate() // + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds()

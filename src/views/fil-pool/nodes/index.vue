@@ -12,7 +12,7 @@
             @keyup.enter.native="handleQuery"
           />
           </el-form-item>
-          <el-form-item label="Owner" prop="msigNode">
+          <el-form-item v-if="poolDatas.roleId == 1" label="Owner" prop="msigNode">
             <el-select
               v-model="queryParams.msigNode"
               placeholder="Owner"
@@ -32,7 +32,7 @@
           <el-form-item label="状态" prop="status">
             <el-select
               v-model="queryParams.status"
-              placeholder="联合节点"
+              placeholder="状态"
               clearable
               size="small"
               style="width: 160px"
@@ -45,7 +45,7 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="联合挖矿" prop="type">
+          <el-form-item v-if="poolDatas.roleId == 1" label="联合挖矿" prop="type">
             <el-select
               v-model="queryParams.type"
               placeholder="联合节点"
@@ -608,9 +608,11 @@ export default {
     this.getDicts('fil_node_type').then(response => {
       this.typeOptions = response.data
     })
-    listFilMsig().then(response => {
-      this.searchMsigNodeOptions = response.data.list
-    })
+    if (this.poolDatas.roleId === 1) {
+      listFilMsig().then(response => {
+        this.searchMsigNodeOptions = response.data.list
+      })
+    }
   },
   methods: {
     /** 查询参数列表 */
@@ -621,8 +623,7 @@ export default {
         this.poolDatas = response.data.list
         this.total = response.data.count
         this.loading = false
-      }
-      )
+      })
     },
     /** 转换部门数据结构 */
     normalizer(node) {

@@ -54,7 +54,7 @@
           </el-col>
         </el-row>
 
-        <el-table v-loading="loading" :data="filMsigList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" border :data="filMsigList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" align="center" /><el-table-column
             label="地址"
             align="center"
