@@ -9,6 +9,15 @@ export function listFilNodes(query) {
   })
 }
 
+// 查询FilNodes列表
+export function listFilNodesChart(query) {
+  return request({
+    url: '/api/v1/nodes-pool',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询FilNodes详细
 export function getFilNodes(id) {
   return request({

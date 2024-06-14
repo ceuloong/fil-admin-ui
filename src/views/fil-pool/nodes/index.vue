@@ -608,17 +608,16 @@ export default {
     this.getDicts('fil_node_type').then(response => {
       this.typeOptions = response.data
     })
-    if (this.poolDatas.roleId === 1) {
-      listFilMsig().then(response => {
-        this.searchMsigNodeOptions = response.data.list
-      })
-    }
+    listFilMsig().then(response => {
+      this.searchMsigNodeOptions = response.data.list
+    })
   },
   methods: {
     /** 查询参数列表 */
     getList() {
       this.loading = true
-      listFilNodes(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
+      // this.addDateRange(this.queryParams, this.dateRange)
+      listFilNodes(this.queryParams).then(response => {
         this.filNodesList = response.data.list.nodesList
         this.poolDatas = response.data.list
         this.total = response.data.count

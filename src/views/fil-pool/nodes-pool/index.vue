@@ -206,7 +206,7 @@ export default {
     /** 查询参数列表 */
     getList() {
       this.loading = true
-      listFilNodes(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
+      listFilNodes(this.queryParams).then(response => {
         this.filNodesList = response.data.list.nodesList
         this.roleId = response.data.list.roleId
         this.total = response.data.count
