@@ -2,7 +2,7 @@
   "name": "fil-admin",
   "version": "2.0.9",
   "description": "A magical vue admin. An out-of-box UI solution for enterprise applications. Newest development stack of vue. Lots of awesome features",
-  "author": "https://github.com/wenjianzhang",
+  "author": "ethan",
   "license": "MIT",
   "scripts": {
     "dev": "vue-cli-service serve",
@@ -39,10 +39,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/go-admin-team/go-admin.git"
+    "url": "git+https://github.com/ceuloong/fil-admin.git"
   },
   "bugs": {
-    "url": "https://github.com/go-admin-team/go-admin/issues"
+    "url": "https://github.com/ceuloong/fil-admin/issues"
   },
   "dependencies": {
     "@riophae/vue-treeselect": "0.4.0",
@@ -100,7 +100,7 @@
     "chokidar": "3.4.2",
     "compression-webpack-plugin": "^4.0.0",
     "connect": "3.7.0",
-    "eslint": "7.6.0",
+    "eslint": "6.2.2",
     "eslint-plugin-vue": "6.2.2",
     "html-webpack-plugin": "4.3.0",
     "husky": "4.2.5",
